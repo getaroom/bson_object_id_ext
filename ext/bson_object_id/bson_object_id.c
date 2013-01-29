@@ -44,6 +44,24 @@
 
 static VALUE ObjectId;
 static VALUE InvalidObjectId;
+static VALUE String;
+
+static VALUE string_blank(VALUE self)
+{
+    char* chars;
+    int len, n;
+    len = RSTRING_LEN(self);
+    if ( len == 0 )
+        return Qtrue;
+
+    chars = RSTRING_PTR(self);
+
+     for ( n = 0; n < len; n++ )
+        if (!rb_isspace(chars[n]))
+            return Qfalse;
+
+    return Qtrue;
+}
 
 static int legal_objectid_str(VALUE str) {
     int i;
@@ -126,9 +144,9 @@ static VALUE objectid_to_s(VALUE self)
     data_arr = RARRAY_PTR(data);
 
     sprintf(cstr, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-        NUM2INT(data_arr[0]), NUM2INT(data_arr[1]), NUM2INT(data_arr[2]), NUM2INT(data_arr[3]),
-        NUM2INT(data_arr[4]), NUM2INT(data_arr[5]), NUM2INT(data_arr[6]), NUM2INT(data_arr[7]),
-        NUM2INT(data_arr[8]), NUM2INT(data_arr[9]), NUM2INT(data_arr[10]), NUM2INT(data_arr[11]));
+        (unsigned)NUM2INT(data_arr[0]), (unsigned)NUM2INT(data_arr[1]), (unsigned)NUM2INT(data_arr[2]), (unsigned)NUM2INT(data_arr[3]),
+        (unsigned)NUM2INT(data_arr[4]), (unsigned)NUM2INT(data_arr[5]), (unsigned)NUM2INT(data_arr[6]), (unsigned)NUM2INT(data_arr[7]),
+        (unsigned)NUM2INT(data_arr[8]), (unsigned)NUM2INT(data_arr[9]), (unsigned)NUM2INT(data_arr[10]), (unsigned)NUM2INT(data_arr[11]));
 
     rstr = rb_str_new(cstr, 24);
     rb_iv_set(self, "@cached_string", rstr);
@@ -150,4 +168,7 @@ void Init_bson_object_id() {
     rb_define_singleton_method(ObjectId, "from_string", objectid_from_string, 1);
 
     rb_define_method(ObjectId, "to_s", objectid_to_s, 0);
+
+    String = rb_const_get(rb_cObject, rb_intern("String"));
+    rb_define_method(String, "blank?", string_blank, 0);
 }
